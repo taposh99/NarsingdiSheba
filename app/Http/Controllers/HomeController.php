@@ -14,6 +14,7 @@ use App\Models\JobPost;
 use App\Models\TouristPlace;
 use App\Models\DailyPrice;
 use App\Models\NewsTicker;
+use App\Models\Advertisement;
 
 class HomeController extends Controller
 {
@@ -53,6 +54,7 @@ class HomeController extends Controller
         $jobs = $jobQuery->latest()->take(4)->get();
         $places = $placeQuery->take(4)->get();
         $dailyPrices = DailyPrice::take(6)->get();
+        $activeAd = Advertisement::where('status', 'active')->latest()->first();
 
         $stats = [
             'donors' => BloodDonor::count(),
@@ -75,7 +77,8 @@ class HomeController extends Controller
             'jobs',
             'places',
             'dailyPrices',
-            'stats'
+            'stats',
+            'activeAd'
         ));
     }
 

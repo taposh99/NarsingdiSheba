@@ -58,22 +58,32 @@
         </div>
 
         <!-- Live Statistics Counter -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 pt-8 border-t border-emerald-700/60 max-w-4xl mx-auto">
-            <div class="bg-emerald-800/40 backdrop-blur-xs p-3.5 rounded-xl border border-emerald-600/30">
-                <div class="text-2xl font-black text-white">{{ $stats['donors'] }}+</div>
-                <div class="text-xs text-emerald-200 font-medium">নিবন্ধিত রক্তদাতা</div>
+        @php
+            $homeVisitorStats = \App\Services\VisitorTracker::getStats();
+        @endphp
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-12 pt-8 border-t border-emerald-700/60 max-w-5xl mx-auto">
+            <div class="bg-emerald-800/40 backdrop-blur-xs p-3 rounded-xl border border-emerald-600/30">
+                <div class="text-xl sm:text-2xl font-black text-white">{{ $stats['donors'] }}+</div>
+                <div class="text-[11px] sm:text-xs text-emerald-200 font-medium">নিবন্ধিত রক্তদাতা</div>
             </div>
-            <div class="bg-emerald-800/40 backdrop-blur-xs p-3.5 rounded-xl border border-emerald-600/30">
-                <div class="text-2xl font-black text-white">{{ $stats['doctors'] }}+</div>
-                <div class="text-xs text-emerald-200 font-medium">অভিজ্ঞ ডাক্তার</div>
+            <div class="bg-emerald-800/40 backdrop-blur-xs p-3 rounded-xl border border-emerald-600/30">
+                <div class="text-xl sm:text-2xl font-black text-white">{{ $stats['doctors'] }}+</div>
+                <div class="text-[11px] sm:text-xs text-emerald-200 font-medium">অভিজ্ঞ ডাক্তার</div>
             </div>
-            <div class="bg-emerald-800/40 backdrop-blur-xs p-3.5 rounded-xl border border-emerald-600/30">
-                <div class="text-2xl font-black text-white">{{ $stats['emergency'] }}+</div>
-                <div class="text-xs text-emerald-200 font-medium">জরুরি হেল্পলাইন</div>
+            <div class="bg-emerald-800/40 backdrop-blur-xs p-3 rounded-xl border border-emerald-600/30">
+                <div class="text-xl sm:text-2xl font-black text-white">{{ $stats['emergency'] }}+</div>
+                <div class="text-[11px] sm:text-xs text-emerald-200 font-medium">জরুরি হেল্পলাইন</div>
             </div>
-            <div class="bg-emerald-800/40 backdrop-blur-xs p-3.5 rounded-xl border border-emerald-600/30">
-                <div class="text-2xl font-black text-white">{{ $stats['products'] }}+</div>
-                <div class="text-xs text-emerald-200 font-medium">পণ্য ও দেশি খাবার</div>
+            <div class="bg-emerald-800/40 backdrop-blur-xs p-3 rounded-xl border border-emerald-600/30">
+                <div class="text-xl sm:text-2xl font-black text-white">{{ $stats['products'] }}+</div>
+                <div class="text-[11px] sm:text-xs text-emerald-200 font-medium">পণ্য ও দেশি খাবার</div>
+            </div>
+            <div class="col-span-2 sm:col-span-1 bg-emerald-800/50 backdrop-blur-xs p-3 rounded-xl border border-emerald-400/40 shadow-xs">
+                <div class="text-xl sm:text-2xl font-black text-emerald-300 flex items-center justify-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>{{ number_format($homeVisitorStats['total']) }}+</span>
+                </div>
+                <div class="text-[11px] sm:text-xs text-emerald-200 font-medium">নাগরিক সেবা গ্রহণকারী</div>
             </div>
         </div>
     </div>
@@ -183,6 +193,50 @@
 
         </div>
     </div>
+</section>
+
+<!-- Advertisement Banner Strip (Package-wise Ad) -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+    @if($activeAd)
+        <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-5 sm:p-6 text-white shadow-lg relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 bg-black/20 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-star text-yellow-300"></i> স্পন্সরড বিজ্ঞাপন
+                </div>
+                <h3 class="text-xl sm:text-2xl font-black">{{ $activeAd->business_name }}</h3>
+                <p class="text-xs sm:text-sm text-amber-100 font-semibold mt-1">{{ $activeAd->title }}</p>
+                @if($activeAd->description)
+                    <p class="text-xs text-amber-50 mt-1 max-w-2xl leading-relaxed">{{ $activeAd->description }}</p>
+                @endif
+            </div>
+
+            <div class="relative z-10 flex items-center gap-3 shrink-0">
+                @if($activeAd->phone)
+                    <a href="tel:{{ $activeAd->phone }}" class="bg-white hover:bg-amber-50 text-amber-900 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-phone"></i> সরাসরি কল
+                    </a>
+                @endif
+                @if($activeAd->target_url)
+                    <a href="{{ $activeAd->target_url }}" target="_blank" class="bg-black/30 hover:bg-black/40 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition flex items-center gap-1.5">
+                        <span>অফার দেখুন</span> <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                    </a>
+                @endif
+                <a href="{{ route('advertise') }}" class="text-[11px] text-amber-200 hover:text-white underline ml-2">
+                    এখানে বিজ্ঞাপন দিন
+                </a>
+            </div>
+        </div>
+    @else
+        <div class="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-2xl p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-rectangle-ad text-lg text-amber-300"></i>
+                <span>আপনার ব্যবসা বা প্রতিষ্ঠানের প্রচার করুন নরসিংদী সেবায় — আকর্ষণীয় প্যাকেজসমূহ</span>
+            </div>
+            <a href="{{ route('advertise') }}" class="bg-white text-emerald-900 font-bold px-3 py-1.5 rounded-xl hover:bg-emerald-50 transition self-start sm:self-auto">
+                বিজ্ঞাপন প্যাকেজ দেখুন
+            </a>
+        </div>
+    @endif
 </section>
 
 <!-- 3. Featured Emergency Services (এক ক্লিকে জরুরি কল) -->

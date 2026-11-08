@@ -11,6 +11,47 @@
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 
+    <!-- PWA & Mobile Meta Tags -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803D">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="geo.region" content="BD-46">
+    <meta name="geo.placename" content="নরসিংদী, ঢাকা, বাংলাদেশ">
+    <meta name="geo.position" content="23.9193;90.7176">
+    <meta name="ICBM" content="23.9193, 90.7176">
+
+    <!-- Schema.org JSON-LD (Lakshmipur Seba Pattern) -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "নরসিংদী সেবা",
+          "alternateName": ["Narsingdi Sheba", "নরসিংদীসেবা", "Narsingdi Sheba Platform"],
+          "url": "{{ url('/') }}",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "নরসিংদী",
+            "addressRegion": "ঢাকা",
+            "addressCountry": "BD"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "url": "{{ url('/') }}",
+          "name": "নরসিংদী সেবা",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ url('/search') }}?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
+
     <!-- Fonts & Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -23,7 +64,14 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased pb-20 md:pb-0" x-data="{ mobileMenu: false, searchModal: false }">
+<body class="bg-slate-50 text-slate-800 antialiased pb-20 md:pb-0" x-data="{ mobileMenu: false, searchModal: false, cartDrawer: false }">
+
+    @php
+        $sessionCart = session('cart', []);
+        $cartCount = array_sum(array_column($sessionCart, 'quantity'));
+        $cartSubtotal = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $sessionCart));
+        $allUpazilas = \App\Models\Upazila::all();
+    @endphp
 
     <!-- 1. Top Breaking News Ticker (Just like Lakshmipur Seba) -->
     @php
@@ -99,6 +147,21 @@
                         <i class="fa-solid fa-droplet text-red-300"></i>
                         <span class="hidden sm:inline">রক্তদাতা</span> খুঁজুন
                     </a>
+
+                    <!-- Auth State (Login / Register / Dashboard) -->
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-800 text-xs md:text-sm font-bold px-3 py-1.5 rounded-full border border-slate-200 transition">
+                            <i class="fa-solid fa-circle-user text-emerald-600 text-base"></i>
+                            <span class="hidden sm:inline">{{ Str::limit(Auth::user()->name, 10) }}</span>
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="hidden sm:inline-flex items-center gap-1 text-slate-700 hover:text-emerald-700 text-xs md:text-sm font-bold px-2.5 py-1.5 rounded-lg transition">
+                            লগইন
+                        </a>
+                        <a href="{{ route('register') }}" class="hidden sm:inline-flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs md:text-sm font-bold px-3 py-1.5 rounded-full transition">
+                            নিবন্ধন
+                        </a>
+                    @endauth
 
                     <!-- Mobile Drawer Toggle -->
                     <button @click="mobileMenu = true" class="md:hidden w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-200">
@@ -235,6 +298,61 @@
 
             </div>
 
+            @php
+                $siteStats = \App\Services\VisitorTracker::getStats();
+            @endphp
+            <!-- Live Visitor Counter & Trust Badge Bar -->
+            <div class="pt-8 pb-4 border-b border-slate-800">
+                <div class="bg-slate-800/60 rounded-2xl p-4 border border-slate-700/60 flex flex-wrap items-center justify-around gap-4 text-center">
+                    <div class="flex items-center gap-2.5">
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
+                        <div class="text-left">
+                            <div class="text-[11px] text-slate-400">অনলাইনে সক্রিয়</div>
+                            <div class="text-sm font-bold text-white tracking-wide"><span id="live-online-count">{{ $siteStats['online'] }}</span> জন নাগরিক</div>
+                        </div>
+                    </div>
+
+                    <div class="h-8 w-px bg-slate-700/70 hidden sm:block"></div>
+
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-[11px] text-slate-400">আজকের ভিজিটর</div>
+                            <div class="text-sm font-bold text-white tracking-wide">{{ number_format($siteStats['today']) }} জন</div>
+                        </div>
+                    </div>
+
+                    <div class="h-8 w-px bg-slate-700/70 hidden sm:block"></div>
+
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-[11px] text-slate-400">সর্বমোট পেজ ভিউ</div>
+                            <div class="text-sm font-bold text-white tracking-wide">{{ number_format($siteStats['total_views']) }}+</div>
+                        </div>
+                    </div>
+
+                    <div class="h-8 w-px bg-slate-700/70 hidden sm:block"></div>
+
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-[11px] text-slate-400">মোট সেবা গ্রহণকারী</div>
+                            <div class="text-sm font-bold text-emerald-400 tracking-wide">{{ number_format($siteStats['total']) }}+ জন</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
                 <p>© {{ date('Y') }} নরসিংদী সেবা। সকল স্বত্ব সংরক্ষিত।</p>
                 <p>লক্ষ্মীপুর সেবা প্যাটার্নে নরসিংদী জেলাবাসীর জন্য নির্মিত।</p>
@@ -285,6 +403,27 @@
                             <button @click="mobileMenu = false" class="text-white/80 hover:text-white p-1">
                                 <i class="fa-solid fa-xmark text-xl"></i>
                             </button>
+                        </div>
+
+                        <!-- User Profile or Auth in Drawer -->
+                        <div class="p-3 bg-emerald-900/60 border-b border-emerald-700/50 text-white text-xs">
+                            @auth
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-circle-user text-lg text-emerald-300"></i>
+                                        <div>
+                                            <span class="font-bold block">{{ Auth::user()->name }}</span>
+                                            <span class="text-[10px] text-emerald-200">{{ Auth::user()->phone }}</span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('dashboard') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1 rounded-lg">ড্যাশবোর্ড</a>
+                                </div>
+                            @else
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('login') }}" class="flex-1 text-center py-2 bg-white text-emerald-900 font-bold rounded-xl">লগইন</a>
+                                    <a href="{{ route('register') }}" class="flex-1 text-center py-2 bg-emerald-700 text-white font-bold rounded-xl border border-emerald-500">নিবন্ধন</a>
+                                </div>
+                            @endauth
                         </div>
 
                         <!-- Drawer Links -->
@@ -351,6 +490,122 @@
             </div>
         </div>
     </div>
+
+    <!-- 6. Interactive Cart Drawer (Lakshmipur Seba Pattern) -->
+    <div x-show="cartDrawer" x-cloak class="relative z-50" aria-labelledby="cart-drawer-title" role="dialog" aria-modal="true">
+        <div x-show="cartDrawer" x-transition.opacity class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"></div>
+        <div class="fixed inset-0 overflow-hidden">
+            <div class="absolute inset-0 overflow-hidden">
+                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                    <div x-show="cartDrawer" x-transition:enter="transform transition ease-in-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in-out duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" class="pointer-events-auto w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                        
+                        <!-- Cart Header -->
+                        <div class="p-5 bg-amber-600 text-white flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-cart-shopping text-xl"></i>
+                                <span class="font-black text-lg">আপনার শপিং কার্ট ({{ $cartCount }}টি)</span>
+                            </div>
+                            <button @click="cartDrawer = false" class="text-white/80 hover:text-white p-1">
+                                <i class="fa-solid fa-xmark text-xl"></i>
+                            </button>
+                        </div>
+
+                        <!-- Cart Items -->
+                        <div class="p-5 flex-1 overflow-y-auto space-y-3">
+                            @forelse($sessionCart as $item)
+                                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3 text-xs">
+                                    <div class="flex-1">
+                                        <h4 class="font-bold text-slate-800 text-sm leading-tight">{{ $item['title'] }}</h4>
+                                        <p class="text-slate-400 mt-0.5">{{ $item['seller_name'] }}</p>
+                                        <div class="font-black text-emerald-800 mt-1">৳ {{ number_format($item['price'], 0) }} / {{ $item['unit'] }}</div>
+                                    </div>
+
+                                    <!-- Quantity Controls -->
+                                    <div class="flex items-center gap-2">
+                                        <form action="{{ route('cart.update') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $item['id'] }}">
+                                            <input type="hidden" name="action" value="decrease">
+                                            <button type="submit" class="w-6 h-6 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center">-</button>
+                                        </form>
+                                        <span class="font-black text-sm text-slate-800 w-5 text-center">{{ $item['quantity'] }}</span>
+                                        <form action="{{ route('cart.update') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $item['id'] }}">
+                                            <input type="hidden" name="action" value="increase">
+                                            <button type="submit" class="w-6 h-6 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center">+</button>
+                                        </form>
+                                        <form action="{{ route('cart.remove') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $item['id'] }}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 ml-1">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="py-12 text-center text-slate-400 text-xs">
+                                    <i class="fa-solid fa-cart-shopping text-3xl mb-2 text-slate-300"></i>
+                                    <p class="text-sm font-semibold text-slate-600 mb-1">কার্ট বর্তমানে খালি</p>
+                                    <p>শপ পেজ থেকে পছন্দের পণ্য বা খাবার যুক্ত করুন।</p>
+                                    <a href="{{ route('shop') }}" @click="cartDrawer = false" class="inline-block mt-4 bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl">শপ দেখুন</a>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <!-- Checkout Section if items present -->
+                        @if($cartCount > 0)
+                        <div class="p-5 bg-slate-50 border-t border-slate-200 space-y-3">
+                            <div class="space-y-1.5 text-xs text-slate-600">
+                                <div class="flex justify-between">
+                                    <span>সাবটোটাল:</span>
+                                    <span class="font-bold text-slate-800">৳ {{ number_format($cartSubtotal, 0) }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>হোম ডেলিভারি চার্জ:</span>
+                                    <span class="font-bold text-slate-800">৳ ৫০</span>
+                                </div>
+                                <div class="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-slate-200">
+                                    <span>সর্বমোট:</span>
+                                    <span class="text-emerald-800">৳ {{ number_format($cartSubtotal + 50, 0) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Fast Cash on Delivery Order Form -->
+                            <form action="{{ route('cart.checkout') }}" method="POST" class="space-y-2 pt-2">
+                                @csrf
+                                <input type="text" name="customer_name" required placeholder="আপনার নাম *" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none">
+                                <input type="text" name="customer_phone" required placeholder="মোবাইল নম্বর *" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none">
+                                <select name="upazila_id" required class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none">
+                                    <option value="">উপজেলা নির্বাচন করুন *</option>
+                                    @foreach($allUpazilas as $u)
+                                        <option value="{{ $u->id }}">{{ $u->name_bn }}</option>
+                                    @endforeach
+                                </select>
+                                <textarea name="delivery_address" required rows="2" placeholder="ডেলিভারি ঠিকানা (গ্রাম/পাড়া, বাড়ি/দোকান) *" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs outline-none"></textarea>
+
+                                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm py-3 rounded-xl shadow-md transition duration-150">
+                                    ক্যাশ অন ডেলিভারিতে অর্ডার করুন
+                                </button>
+                            </form>
+                        </div>
+                        @endif
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW failed', err));
+            });
+        }
+    </script>
 
 </body>
 </html>

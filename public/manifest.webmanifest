@@ -1,0 +1,23 @@
+{
+  "name": "নরসিংদী সেবা (Narsingdi Sheba)",
+  "short_name": "নরসিংদী সেবা",
+  "description": "নরসিংদী জেলার সকল ডিজিটাল সেবা ও হেল্পলাইন এক ঠিকানায়।",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F7F5",
+  "theme_color": "#15803D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
+
