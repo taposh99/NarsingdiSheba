@@ -51,17 +51,24 @@
     <!-- Places Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($places as $place)
-            <div class="bg-white rounded-3xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden flex flex-col justify-between">
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden flex flex-col justify-between group">
                 <div>
-                    <div class="h-44 bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white text-5xl">
-                        <i class="fa-solid fa-landmark-dome"></i>
-                    </div>
-                    <div class="p-6">
-                        <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 mb-2 inline-block">
+                    <div class="h-48 relative overflow-hidden bg-slate-900">
+                        @if($place->image_url)
+                            <img src="{{ asset($place->image_url) }}" alt="{{ $place->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                        @else
+                            <div class="w-full h-full bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white text-5xl">
+                                <i class="fa-solid fa-landmark-dome"></i>
+                            </div>
+                        @endif
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold bg-emerald-700/90 text-white backdrop-blur-xs shadow-xs">
                             {{ $place->category }}
                         </span>
-                        <h3 class="font-bold text-slate-900 text-lg mb-1 leading-snug">{{ $place->name }}</h3>
-                        <p class="text-xs text-slate-500 mb-3"><i class="fa-solid fa-location-dot text-slate-400 mr-1.5"></i>{{ $place->location }}</p>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-slate-900 text-lg mb-1 leading-snug group-hover:text-emerald-700 transition">{{ $place->name }}</h3>
+                        <p class="text-xs text-slate-500 mb-3 flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-emerald-600 shrink-0"></i>{{ $place->location }}</p>
                         <p class="text-xs text-slate-600 leading-relaxed">{{ $place->description }}</p>
                     </div>
                 </div>

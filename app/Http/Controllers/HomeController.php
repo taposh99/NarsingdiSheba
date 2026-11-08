@@ -52,7 +52,7 @@ class HomeController extends Controller
         $homemadeFoods = Product::where('category', 'homemade')->take(4)->get();
         $workers = $workerQuery->take(4)->get();
         $jobs = $jobQuery->latest()->take(4)->get();
-        $places = $placeQuery->take(4)->get();
+        $places = $placeQuery->take(6)->get();
         $dailyPrices = DailyPrice::take(6)->get();
         $activeAd = Advertisement::where('status', 'active')->latest()->first();
 

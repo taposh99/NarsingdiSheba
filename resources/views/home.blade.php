@@ -508,19 +508,31 @@
         </a>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         @foreach($places as $place)
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition overflow-hidden">
-                <div class="h-32 bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white text-3xl">
-                    <i class="fa-solid fa-monument"></i>
-                </div>
-                <div class="p-4">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 mb-1 inline-block">
-                        {{ $place->category }}
-                    </span>
-                    <h3 class="font-bold text-slate-900 text-sm mb-1 leading-snug">{{ $place->name }}</h3>
-                    <p class="text-xs text-slate-500 mb-2"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>{{ $place->location }}</p>
-                    <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">{{ $place->description }}</p>
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition overflow-hidden flex flex-col justify-between group">
+                <div>
+                    <div class="h-36 relative overflow-hidden bg-slate-900">
+                        @if($place->image_url)
+                            <img src="{{ asset($place->image_url) }}" alt="{{ $place->name }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 ease-out" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                        @else
+                            <div class="w-full h-full bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white text-3xl">
+                                <i class="fa-solid fa-monument"></i>
+                            </div>
+                        @endif
+                        <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-700/90 text-white backdrop-blur-xs shadow-xs">
+                            {{ $place->category }}
+                        </span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-slate-900 text-sm mb-1 leading-snug group-hover:text-emerald-700 transition">{{ $place->name }}</h3>
+                        <p class="text-[11px] text-slate-500 mb-2 flex items-center gap-1">
+                            <i class="fa-solid fa-location-dot text-emerald-600 shrink-0"></i>
+                            <span class="truncate">{{ $place->location }}</span>
+                        </p>
+                        <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">{{ $place->description }}</p>
+                    </div>
                 </div>
             </div>
         @endforeach
