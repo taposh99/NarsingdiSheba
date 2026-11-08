@@ -14,3 +14,4 @@ class Hospital extends Model
         return $this->belongsTo(Upazila::class);
     }
 }
+

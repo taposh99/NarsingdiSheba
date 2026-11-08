@@ -14,3 +14,4 @@ class TouristPlace extends Model
         return $this->belongsTo(Upazila::class);
     }
 }
+

@@ -297,3 +297,4 @@ class NarsingdiShebaSeeder extends Seeder
         }
     }
 }
+

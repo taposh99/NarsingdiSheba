@@ -18,3 +18,4 @@ class JobPost extends Model
         return $this->belongsTo(Upazila::class);
     }
 }
+

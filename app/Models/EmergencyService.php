@@ -14,3 +14,4 @@ class EmergencyService extends Model
         return $this->belongsTo(Upazila::class);
     }
 }
+

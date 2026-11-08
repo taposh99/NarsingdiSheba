@@ -12,3 +12,4 @@ class NewsTicker extends Model
         'is_active' => 'boolean',
     ];
 }
+

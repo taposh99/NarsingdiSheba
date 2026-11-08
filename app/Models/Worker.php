@@ -18,3 +18,4 @@ class Worker extends Model
         return $this->belongsTo(Upazila::class);
     }
 }
+

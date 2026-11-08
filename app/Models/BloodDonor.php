@@ -19,3 +19,4 @@ class BloodDonor extends Model
         return $this->belongsTo(Upazila::class);
     }
 }
+

@@ -8,3 +8,4 @@ class DailyPrice extends Model
 {
     protected $guarded = [];
 }
+

@@ -14,3 +14,4 @@ class Doctor extends Model
         return $this->belongsTo(Upazila::class);
     }
 }
+

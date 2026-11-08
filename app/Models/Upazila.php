@@ -49,3 +49,4 @@ class Upazila extends Model
         return $this->hasMany(TouristPlace::class);
     }
 }
+

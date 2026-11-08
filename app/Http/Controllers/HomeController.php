@@ -305,3 +305,4 @@ class HomeController extends Controller
         return view('search', compact('q', 'emergency', 'doctors', 'products', 'workers', 'jobs'));
     }
 }
+
