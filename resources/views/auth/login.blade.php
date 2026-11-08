@@ -65,8 +65,9 @@
         <!-- Demo credentials box -->
         <div class="mt-6 p-3.5 bg-emerald-50/70 border border-emerald-100 rounded-2xl text-[11px] text-emerald-800 space-y-1">
             <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-info"></i> টেস্ট লগইন অ্যাকাউন্ট:</p>
-            <p>• অ্যাডমিন: <span class="font-bold text-slate-800">01700000000</span> | পাসওয়ার্ড: <span class="font-bold text-slate-800">password</span></p>
-            <p>• সেলার: <span class="font-bold text-slate-800">01800000000</span> | পাসওয়ার্ড: <span class="font-bold text-slate-800">password</span></p>
+            <p>• অ্যাডমিন (সকল এক্সেস): <span class="font-bold text-slate-800">01700000000</span> | পাসওয়ার্ড: <span class="font-bold text-slate-800">password</span></p>
+            <p>• মডারেটর (নির্দিষ্ট পারমিশন): <span class="font-bold text-slate-800">01900000000</span> | পাসওয়ার্ড: <span class="font-bold text-slate-800">password</span></p>
+            <p>• সেলার (দোকানদার): <span class="font-bold text-slate-800">01800000000</span> | পাসওয়ার্ড: <span class="font-bold text-slate-800">password</span></p>
         </div>
 
         <!-- Register Link -->

@@ -12,6 +12,7 @@ use App\Models\BloodDonor;
 use App\Models\Product;
 use App\Models\Worker;
 use App\Models\JobPost;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class AdminController extends Controller
@@ -19,14 +20,21 @@ class AdminController extends Controller
     private function ensureAdmin()
     {
         if (!Auth::check() || !Auth::user()->isAdmin()) {
-            abort(403, 'অননুমোদিত প্রবেশাধিকার। শুধুমাত্র অ্যাডমিন এই অ্যাকশন নিতে পারবেন।');
+            abort(403, 'অননুমোদিত প্রবেশাধিকার। শুধুমাত্র সুপার অ্যাডমিন এই অ্যাকশন নিতে পারবেন।');
+        }
+    }
+
+    private function ensurePermission(string $permission)
+    {
+        if (!Auth::check() || !Auth::user()->hasPermission($permission)) {
+            abort(403, 'অননুমোদিত প্রবেশাধিকার। আপনার এই বিভাগটি পরিচালনা করার অনুমতি নেই।');
         }
     }
 
     // 1. News Ticker Management
     public function storeTicker(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_tickers');
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'link' => 'nullable|string|max:255',
@@ -38,7 +46,7 @@ class AdminController extends Controller
 
     public function toggleTicker($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_tickers');
         $ticker = NewsTicker::findOrFail($id);
         $ticker->is_active = !$ticker->is_active;
         $ticker->save();
@@ -47,7 +55,7 @@ class AdminController extends Controller
 
     public function deleteTicker($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_tickers');
         NewsTicker::findOrFail($id)->delete();
         return back()->with('success', 'টিকার সফলভাবে মুছে ফেলা হয়েছে।');
     }
@@ -55,7 +63,7 @@ class AdminController extends Controller
     // 2. Daily Market Price Management
     public function storePrice(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_prices');
         $validated = $request->validate([
             'item_name' => 'required|string|max:100',
             'category' => 'required|string|max:50',
@@ -69,7 +77,7 @@ class AdminController extends Controller
 
     public function updatePrice(Request $request, $id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_prices');
         $price = DailyPrice::findOrFail($id);
         $price->update($request->only(['price', 'trend']));
         return back()->with('success', 'বাজারদর সফলভাবে হালনাগাদ করা হয়েছে।');
@@ -77,7 +85,7 @@ class AdminController extends Controller
 
     public function deletePrice($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_prices');
         DailyPrice::findOrFail($id)->delete();
         return back()->with('success', 'বাজারদর থেকে পণ্য মুছে ফেলা হয়েছে।');
     }
@@ -85,7 +93,7 @@ class AdminController extends Controller
     // 3. Emergency Service Management
     public function storeEmergency(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_emergency');
         $validated = $request->validate([
             'title' => 'required|string|max:150',
             'category' => 'required|string',
@@ -101,7 +109,7 @@ class AdminController extends Controller
 
     public function deleteEmergency($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_emergency');
         EmergencyService::findOrFail($id)->delete();
         return back()->with('success', 'জরুরি সেবা নম্বর মুছে ফেলা হয়েছে।');
     }
@@ -109,7 +117,7 @@ class AdminController extends Controller
     // 4. Doctor Management
     public function storeDoctor(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_doctors');
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'specialty' => 'required|string|max:100',
@@ -126,7 +134,7 @@ class AdminController extends Controller
 
     public function deleteDoctor($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_doctors');
         Doctor::findOrFail($id)->delete();
         return back()->with('success', 'ডাক্তারের তথ্য মুছে ফেলা হয়েছে।');
     }
@@ -134,7 +142,7 @@ class AdminController extends Controller
     // 5. Blood Donor Management
     public function deleteDonor($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_blood');
         BloodDonor::findOrFail($id)->delete();
         return back()->with('success', 'রক্তদাতার তথ্য মুছে ফেলা হয়েছে।');
     }
@@ -142,7 +150,7 @@ class AdminController extends Controller
     // 6. Product Management
     public function storeProduct(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_products');
         $validated = $request->validate([
             'title' => 'required|string|max:150',
             'category' => 'required|string',
@@ -162,7 +170,7 @@ class AdminController extends Controller
 
     public function deleteProduct($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_products');
         Product::findOrFail($id)->delete();
         return back()->with('success', 'পণ্য মুছে ফেলা হয়েছে।');
     }
@@ -170,7 +178,7 @@ class AdminController extends Controller
     // 7. Job Moderation
     public function toggleJob($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_jobs');
         $job = JobPost::findOrFail($id);
         $job->is_active = !$job->is_active;
         $job->save();
@@ -179,7 +187,7 @@ class AdminController extends Controller
 
     public function deleteJob($id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_jobs');
         JobPost::findOrFail($id)->delete();
         return back()->with('success', 'চাকরির বিজ্ঞপ্তি মুছে ফেলা হয়েছে।');
     }
@@ -187,12 +195,42 @@ class AdminController extends Controller
     // 8. Order Delivery & Status Management
     public function updateOrderStatus(Request $request, $id)
     {
-        $this->ensureAdmin();
+        $this->ensurePermission('manage_orders');
         $order = \App\Models\Order::findOrFail($id);
         $status = $request->input('status', 'pending');
         $order->status = $status;
         $order->save();
 
         return back()->with('success', "অর্ডার #{$order->id}-এর স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে।");
+    }
+
+    // 9. User Roles & Permission Management (Super Admin only)
+    public function updateUserPermissions(Request $request, $id)
+    {
+        $this->ensureAdmin();
+        $targetUser = User::findOrFail($id);
+
+        // Prevent self-demotion from super admin
+        if ($targetUser->id === Auth::id() && $request->input('role') !== 'admin') {
+            return back()->with('error', 'আপনি নিজের সুপার অ্যাডমিন রোল বাতিল করতে পারবেন না।');
+        }
+
+        $validated = $request->validate([
+            'role' => 'required|in:admin,moderator,seller,user',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string',
+        ]);
+
+        $targetUser->role = $validated['role'];
+        if ($validated['role'] === 'admin') {
+            $targetUser->permissions = ['*'];
+        } elseif ($validated['role'] === 'moderator') {
+            $targetUser->permissions = $validated['permissions'] ?? [];
+        } else {
+            $targetUser->permissions = [];
+        }
+        $targetUser->save();
+
+        return back()->with('success', "ইউজার '{$targetUser->name}'-এর রোল ও পারমিশন সফলভাবে হালনাগাদ করা হয়েছে।");
     }
 }

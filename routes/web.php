@@ -75,5 +75,8 @@ Route::middleware('auth')->group(function () {
 
         // Order Management
         Route::post('/orders/{id}/status', [AdminController::class, 'updateOrderStatus'])->name('orders.status');
+
+        // User Role & Permissions Management (Super Admin)
+        Route::post('/users/{id}/permissions', [AdminController::class, 'updateUserPermissions'])->name('users.permissions');
     });
 });

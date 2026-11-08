@@ -31,9 +31,9 @@ class DashboardController extends Controller
 
         $upazilas = Upazila::all();
 
-        // If user is Admin, gather system collections for management
+        // If user has management access (Admin or Moderator with permissions), gather allowed collections
         $adminData = [];
-        if ($user->isAdmin()) {
+        if ($user->canAccessManagement()) {
             $adminData = [
                 'total_users' => User::count(),
                 'total_donors' => BloodDonor::count(),
@@ -42,16 +42,28 @@ class DashboardController extends Controller
                 'total_ads' => Advertisement::count(),
                 'total_orders' => Order::count(),
                 'recent_users' => User::latest()->take(6)->get(),
-                'tickers' => NewsTicker::latest()->get(),
-                'prices' => DailyPrice::latest()->get(),
-                'emergencies' => EmergencyService::with('upazila')->latest()->take(15)->get(),
-                'doctors' => Doctor::with('upazila')->latest()->take(15)->get(),
-                'donors' => BloodDonor::with('upazila')->latest()->take(15)->get(),
-                'products' => Product::with('upazila')->latest()->take(15)->get(),
-                'jobs' => JobPost::with('upazila')->latest()->take(15)->get(),
-                'ads' => Advertisement::with('package')->latest()->get(),
+                'all_users' => $user->isAdmin() ? User::with('upazila')->latest()->get() : collect([]),
+                'tickers' => $user->hasPermission('manage_tickers') ? NewsTicker::latest()->get() : collect([]),
+                'prices' => $user->hasPermission('manage_prices') ? DailyPrice::latest()->get() : collect([]),
+                'emergencies' => $user->hasPermission('manage_emergency') ? EmergencyService::with('upazila')->latest()->take(15)->get() : collect([]),
+                'doctors' => $user->hasPermission('manage_doctors') ? Doctor::with('upazila')->latest()->take(15)->get() : collect([]),
+                'donors' => $user->hasPermission('manage_blood') ? BloodDonor::with('upazila')->latest()->take(15)->get() : collect([]),
+                'products' => $user->hasPermission('manage_products') ? Product::with('upazila')->latest()->take(15)->get() : collect([]),
+                'jobs' => $user->hasPermission('manage_jobs') ? JobPost::with('upazila')->latest()->take(15)->get() : collect([]),
+                'ads' => $user->hasPermission('manage_ads') ? Advertisement::with('package')->latest()->get() : collect([]),
                 'ad_packages' => AdPackage::all(),
-                'orders' => Order::with(['upazila', 'items.product'])->latest()->take(20)->get(),
+                'orders' => $user->hasPermission('manage_orders') ? Order::with(['upazila', 'items.product'])->latest()->take(20)->get() : collect([]),
+                'available_permissions' => [
+                    'manage_emergency' => 'জরুরি সেবা',
+                    'manage_blood' => 'রক্ত ব্যাংক',
+                    'manage_doctors' => 'ডাক্তার ও চেম্বার',
+                    'manage_products' => 'অনলাইন শপ পণ্য',
+                    'manage_orders' => 'কাস্টমার অর্ডার',
+                    'manage_jobs' => 'চাকরির সার্কুলার',
+                    'manage_prices' => 'আজকের বাজারদর',
+                    'manage_tickers' => 'ব্রেকিং নিউজ টিকার',
+                    'manage_ads' => 'বিজ্ঞাপন ও প্যাকেজ',
+                ],
             ];
         }
 

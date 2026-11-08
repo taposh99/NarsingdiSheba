@@ -123,7 +123,63 @@
     </div>
     @endif
 
-    @if($emergency->count() == 0 && $doctors->count() == 0 && $products->count() == 0 && $workers->count() == 0 && $jobs->count() == 0)
+    <!-- 6. Blood Donors Results -->
+    @if(isset($donors) && $donors->count() > 0)
+    <div>
+        <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-droplet text-red-600"></i> রক্তদাতা তালিকা</span>
+            <a href="{{ route('blood', ['search' => $q]) }}" class="text-xs text-red-600 hover:underline font-semibold">সকল রক্তদাতা দেখুন &rarr;</a>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($donors as $d)
+                @php $fInfo = $d->fitness_info; @endphp
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-red-600 text-white font-black text-sm flex items-center justify-center shrink-0">
+                            {{ $d->blood_group }}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm leading-tight">{{ $d->name }}</h3>
+                            <p class="text-[11px] text-slate-500">{{ $d->location }}</p>
+                            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md mt-1 {{ $fInfo['is_fit'] ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800' }}">
+                                {{ $fInfo['title'] }}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="tel:{{ $d->phone }}" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl shrink-0 transition">
+                        <i class="fa-solid fa-phone"></i>
+                    </a>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    <!-- 7. Tourist Places Results -->
+    @if(isset($places) && $places->count() > 0)
+    <div>
+        <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-teal-600"></i> দর্শনীয় স্থান</span>
+            <a href="{{ route('places') }}" class="text-xs text-teal-600 hover:underline font-semibold">সব স্থান দেখুন &rarr;</a>
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            @foreach($places as $p)
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col justify-between">
+                    @if($p->image_url)
+                        <img src="{{ asset($p->image_url) }}" alt="{{ $p->name }}" class="w-full h-32 object-cover">
+                    @endif
+                    <div class="p-3">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-50 text-teal-700">{{ $p->category }}</span>
+                        <h3 class="font-bold text-slate-900 text-xs mt-1 leading-snug">{{ $p->name }}</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>{{ $p->location }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    @if($emergency->count() == 0 && $doctors->count() == 0 && $products->count() == 0 && $workers->count() == 0 && $jobs->count() == 0 && (!isset($donors) || $donors->count() == 0) && (!isset($places) || $places->count() == 0))
         <div class="bg-white p-12 text-center rounded-2xl border border-slate-200">
             <i class="fa-solid fa-magnifying-glass text-3xl text-slate-300 mb-2"></i>
             <h3 class="text-base font-bold text-slate-800 mb-1">কোনো তথ্য পাওয়া যায়নি</h3>

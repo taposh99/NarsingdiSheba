@@ -106,13 +106,31 @@ class HomeController extends Controller
 
     public function blood(Request $request)
     {
+        $search = trim($request->query('search', ''));
         $group = $request->query('group');
         $upazilaSlug = $request->query('upazila');
+        $fitness = $request->query('fitness', 'all');
+        $sort = $request->query('sort', 'fit_first');
+
+        $cutoffDate = now()->subDays(90);
 
         $query = BloodDonor::with('upazila')->where('is_available', true);
+
+        // Search by Name, Mobile Number or Location
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by Blood Group
         if ($group) {
             $query->where('blood_group', $group);
         }
+
+        // Filter by Upazila
         if ($upazilaSlug) {
             $upazila = Upazila::where('slug', $upazilaSlug)->first();
             if ($upazila) {
@@ -120,11 +138,53 @@ class HomeController extends Controller
             }
         }
 
-        $donors = $query->latest()->paginate(12)->withQueryString();
+        // Filter by Donation Fitness (Date-wise)
+        if ($fitness === 'fit') {
+            $query->where(function ($q) use ($cutoffDate) {
+                $q->whereNull('last_donated_at')
+                  ->orWhere('last_donated_at', '<=', $cutoffDate);
+            });
+        } elseif ($fitness === 'resting') {
+            $query->whereNotNull('last_donated_at')
+                  ->where('last_donated_at', '>', $cutoffDate);
+        }
+
+        // Sorting
+        if ($sort === 'latest_donation') {
+            $query->orderByDesc('last_donated_at');
+        } elseif ($sort === 'newest') {
+            $query->latest();
+        } else {
+            // Default: 'fit_first' - show fit donors on top, then resting
+            $query->orderByRaw("CASE WHEN last_donated_at IS NULL OR last_donated_at <= ? THEN 0 ELSE 1 END", [$cutoffDate])
+                  ->orderByRaw("CASE WHEN last_donated_at IS NULL THEN 0 ELSE 1 END")
+                  ->orderBy('last_donated_at', 'asc');
+        }
+
+        $donors = $query->paginate(12)->withQueryString();
         $upazilas = Upazila::all();
         $bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
-        return view('services.blood', compact('donors', 'upazilas', 'bloodGroups', 'group', 'upazilaSlug'));
+        // Live Blood Bank Counts
+        $stats = [
+            'total' => BloodDonor::where('is_available', true)->count(),
+            'fit' => BloodDonor::where('is_available', true)->where(function ($q) use ($cutoffDate) {
+                $q->whereNull('last_donated_at')->orWhere('last_donated_at', '<=', $cutoffDate);
+            })->count(),
+            'resting' => BloodDonor::where('is_available', true)->whereNotNull('last_donated_at')->where('last_donated_at', '>', $cutoffDate)->count(),
+        ];
+
+        return view('services.blood', compact(
+            'donors', 
+            'upazilas', 
+            'bloodGroups', 
+            'group', 
+            'upazilaSlug', 
+            'search', 
+            'fitness', 
+            'sort',
+            'stats'
+        ));
     }
 
     public function storeBloodDonor(Request $request)
@@ -138,9 +198,10 @@ class HomeController extends Controller
             'last_donated_at' => 'nullable|date',
         ]);
 
+        $validated['is_available'] = true; // Auto approved as active donor
         BloodDonor::create($validated);
 
-        return back()->with('success', 'রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন! আপনার এই মহৎ উদ্যোগের জন্য ধন্যবাদ।');
+        return back()->with('success', 'রক্তদাতা হিসেবে সফলভাবে নিবন্ধিত হয়েছেন! আপনার প্রোফাইলটি সরাসরি রক্ত ব্যাংক তালিকায় যুক্ত হয়েছে।');
     }
 
     public function doctors(Request $request)
@@ -239,9 +300,10 @@ class HomeController extends Controller
             'requirements' => 'nullable|string',
         ]);
 
+        $validated['is_active'] = true; // Auto approved
         JobPost::create($validated);
 
-        return back()->with('success', 'চাকরির বিজ্ঞপ্তিটি সফলভাবে পোস্ট করা হয়েছে!');
+        return back()->with('success', 'চাকরির বিজ্ঞপ্তিটি সফলভাবে তাৎক্ষণিক প্রকাশিত হয়েছে!');
     }
 
     public function marketPrices()
@@ -305,7 +367,22 @@ class HomeController extends Controller
             ->orWhere('company_name', 'like', "%{$q}%")
             ->take(5)->get();
 
-        return view('search', compact('q', 'emergency', 'doctors', 'products', 'workers', 'jobs'));
+        $donors = BloodDonor::with('upazila')->where('is_available', true)
+            ->where(function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%")
+                      ->orWhere('blood_group', 'like', "%{$q}%")
+                      ->orWhere('phone', 'like', "%{$q}%")
+                      ->orWhere('location', 'like', "%{$q}%");
+            })
+            ->take(6)->get();
+
+        $places = TouristPlace::with('upazila')
+            ->where('name', 'like', "%{$q}%")
+            ->orWhere('description', 'like', "%{$q}%")
+            ->orWhere('location', 'like', "%{$q}%")
+            ->take(4)->get();
+
+        return view('search', compact('q', 'emergency', 'doctors', 'products', 'workers', 'jobs', 'donors', 'places'));
     }
 }
 
